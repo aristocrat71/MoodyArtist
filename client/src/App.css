@@ -1,42 +1,90 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+body, #root, .App {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+}
+
+.App {
+  background: #fff;
+  padding: 2.5rem 2rem 2rem 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  max-width: 350px;
+  width: 100%;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+h1 {
+  font-size: 2rem;
+  color: #4f46e5;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+input[type="text"] {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+  background: #f1f5f9;
+}
+input[type="text"]:focus {
+  border-color: #6366f1;
+  background: #fff;
+}
+
+button[type="submit"] {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+  transition: background 0.2s, transform 0.1s;
+}
+button[type="submit"]:hover {
+  background: linear-gradient(90deg, #818cf8 0%, #6366f1 100%);
+  transform: translateY(-2px) scale(1.03);
+}
+
+p[style*="color: red"] {
+  margin: 0.5rem 0 0 0;
+  color: #ef4444 !important;
+  font-size: 0.98rem;
+}
+
+[style*="font-weight: bold"] {
+  color: #0f172a;
+  background: #e0e7ff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-top: 1.2rem;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06);
+}
+
+@media (max-width: 500px) {
+  .App {
+    padding: 1.5rem 0.5rem 1.5rem 0.5rem;
+    max-width: 98vw;
   }
-  to {
-    transform: rotate(360deg);
+  h1 {
+    font-size: 1.3rem;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }
