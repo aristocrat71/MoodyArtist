@@ -1,0 +1,23 @@
+{
+    "Beginner": [
+      "Crayon art",
+      "Watercolor painting",
+      "Simple collage",
+      "Free Doodle",
+      "Sketching"
+    ],
+    "Intermediate": [
+      "Watercolor painting",
+      "Pencil sketch",
+      "Digital lineart",
+      "Doodle",
+      "Acrylic painting"
+    ],
+    "Expert": [
+      "Oil painting",
+      "Mixed media",
+      "Pencil realism",
+      "Digital art",
+      "Acrylic painting"
+    ]
+  }

@@ -1,66 +1,89 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
-import requests
-import json
 import os
 from dotenv import load_dotenv
+
+# Import our modular components
+from validators import validate_preferences, get_art_forms_for_experience
+from prompt_builder import build_creative_prompt
+from hf_client import HuggingFaceClient
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Required for sessions
 CORS(app)
 
-# Hugging Face API configuration
-HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
-API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN')
+# Initialize HuggingFace client
+try:
+    hf_client = HuggingFaceClient()
+except ValueError as e:
+    print(f"Warning: {e}")
+    hf_client = None
 
-@app.route('/generate-idea', methods=['POST'])
-def generate_idea():
-    data = request.get_json()
-    words = data.get('words', [])
-    
-    if not words:
-        return jsonify({'error': 'No words provided'}), 400
-    
-    # Create a creative prompt for idea generation
-    prompt = f"""<s>[INST] You are a creative artist and idea generator. Given these words: {', '.join(words)}, 
-    generate a unique, creative artistic idea or concept. 
-    
-    The idea should be:
-    - Creative and original
-    - Feasible to create
-    - Interesting and engaging
-    - Related to the provided words
-    
-    Please provide a brief but inspiring description of the artistic idea: [/INST]"""
-    
+@app.route('/api/preferences', methods=['POST'])
+def set_preferences():
+    """Set user preferences in session"""
     try:
-        # Call Hugging Face Inference API
-        headers = {"Authorization": f"Bearer {API_TOKEN}"}
-        payload = {"inputs": prompt}
+        data = request.get_json()
         
-        response = requests.post(HUGGINGFACE_API_URL, headers=headers, json=payload, timeout=60)
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
         
-        if response.status_code == 200:
-            result = response.json()
-            # Extract the generated text from the response
-            if isinstance(result, list) and len(result) > 0:
-                idea = result[0].get('generated_text', '').strip()
-                # Clean up the response to get just the generated part
-                if '[/INST]' in idea:
-                    idea = idea.split('[/INST]')[-1].strip()
-            else:
-                idea = str(result).strip()
-            
-            return jsonify({'idea': idea})
-        else:
-            print(f"API Error: {response.status_code} - {response.text}")
-            return jsonify({'error': 'Failed to generate idea'}), 500
+        # Validate input
+        is_valid, error_message = validate_preferences(data)
+        if not is_valid:
+            return jsonify({'error': error_message}), 400
+        
+        # Store preferences in session
+        session['experience'] = data['experience']
+        session['artform'] = data['artform']
+        session['moods'] = data['moods']
+        
+        return jsonify({'status': 'success', 'message': 'Preferences saved successfully'})
         
     except Exception as e:
-        print(f"Error generating idea: {e}")
-        return jsonify({'error': 'Failed to generate idea'}), 500
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+@app.route('/api/generate', methods=['POST'])
+def generate_idea():
+    """Generate creative idea based on stored preferences"""
+    try:
+        # Check if preferences are stored in session
+        if 'experience' not in session or 'artform' not in session or 'moods' not in session:
+            return jsonify({'error': 'No preferences found. Please set preferences first.'}), 400
+        
+        # Check if HF client is available
+        if not hf_client:
+            return jsonify({'error': 'HuggingFace API not configured'}), 500
+        
+        # Build creative prompt
+        prompt = build_creative_prompt(
+            session['experience'],
+            session['artform'],
+            session['moods']
+        )
+        
+        # Generate idea using HuggingFace
+        result = hf_client.generate_idea(prompt)
+        
+        if result['success']:
+            return jsonify({'idea': result['idea']})
+        else:
+            return jsonify({'error': result['error']}), 500
+            
+    except Exception as e:
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+@app.route('/api/art-forms/<experience>', methods=['GET'])
+def get_art_forms(experience):
+    """Get available art forms for a given experience level"""
+    try:
+        art_forms = get_art_forms_for_experience(experience)
+        return jsonify({'art_forms': art_forms})
+    except Exception as e:
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
