@@ -10,6 +10,26 @@ from hf_client import HuggingFaceClient
 
 # Load environment variables
 load_dotenv()
+# Debug: Check if API key is loaded
+print(f"HF_API_KEY loaded: {'Yes' if os.getenv('HF_API_KEY') else 'No'}")
+print(f"API Key starts with 'hf_': {'Yes' if os.getenv('HF_API_KEY', '').startswith('hf_') else 'No'}")
+
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Required for sessions
+CORS(app)
+
+# Initialize HuggingFace client
+try:
+    api_key = os.getenv('HF_API_KEY')
+    if not api_key:
+        print("Warning: HF_API_KEY not found in environment variables")
+        hf_client = None
+    else:
+        hf_client = HuggingFaceClient()
+        print("HuggingFace client initialized successfully")
+except Exception as e:
+    print(f"Warning: Failed to initialize HuggingFace client: {e}")
+    hf_client = None
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Required for sessions
